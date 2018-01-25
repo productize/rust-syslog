@@ -266,6 +266,20 @@ pub fn init_unix(facility: Facility, log_level: log::LevelFilter) -> Result<()> 
   })
 }
 
+/// Unix socket Logger init function compatible with log crate
+pub fn make_unix(facility: Facility, log_level: log::LevelFilter) -> Result<Box<Log>> {
+  log::set_max_level(log_level);     
+  let (process_name, pid) = get_process_info()?;
+  let formatter = Formatter3164 {
+    facility: facility.clone(),
+    hostname: None,
+    process:  process_name,
+    pid:      pid,
+  };
+  let logger = unix(formatter)?;
+  Ok(Box::new(BasicLogger::new(logger)))
+}
+
 /// Unix socket Logger init function compatible with log crate and user provided socket path
 pub fn init_unix_custom<P: AsRef<Path>>(facility: Facility, log_level: log::LevelFilter, path: P) -> Result<()> {
   log::set_max_level(log_level);     
